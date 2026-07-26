@@ -4,16 +4,28 @@ idf_component_register(
         "audio.c"
         "backend.c"
         "battery.c"
-        "codec_board.c"
-        "codec_init.c"
         "config_store.c"
-        "dummy_codec.c"
         "portal.c"
         "st7305.c"
         "ui.c"
         "voice_chat.c"
         "wifi_manager.c"
+        "/Users/deliqiao/Documents/github/inksight/firmware/esp-idf/ESP32-S3-RLCD4.2/components/esp_codec_dev/esp_codec_dev.c"
+        "/Users/deliqiao/Documents/github/inksight/firmware/esp-idf/ESP32-S3-RLCD4.2/components/esp_codec_dev/esp_codec_dev_vol.c"
+        "/Users/deliqiao/Documents/github/inksight/firmware/esp-idf/ESP32-S3-RLCD4.2/components/esp_codec_dev/esp_codec_dev_if.c"
+        "/Users/deliqiao/Documents/github/inksight/firmware/esp-idf/ESP32-S3-RLCD4.2/components/esp_codec_dev/audio_codec_sw_vol.c"
+        "/Users/deliqiao/Documents/github/inksight/firmware/esp-idf/ESP32-S3-RLCD4.2/components/esp_codec_dev/platform/audio_codec_gpio.c"
+        "/Users/deliqiao/Documents/github/inksight/firmware/esp-idf/ESP32-S3-RLCD4.2/components/esp_codec_dev/platform/audio_codec_ctrl_i2c.c"
+        "/Users/deliqiao/Documents/github/inksight/firmware/esp-idf/ESP32-S3-RLCD4.2/components/esp_codec_dev/platform/audio_codec_data_i2s.c"
+        "/Users/deliqiao/Documents/github/inksight/firmware/esp-idf/ESP32-S3-RLCD4.2/components/esp_codec_dev/platform/audio_codec_ctrl_spi.c"
+        "/Users/deliqiao/Documents/github/inksight/firmware/esp-idf/ESP32-S3-RLCD4.2/components/esp_codec_dev/platform/esp_codec_dev_os.c"
+        "/Users/deliqiao/Documents/github/inksight/firmware/esp-idf/ESP32-S3-RLCD4.2/components/esp_codec_dev/device/es8311/es8311.c"
+        "/Users/deliqiao/Documents/github/inksight/firmware/esp-idf/ESP32-S3-RLCD4.2/components/esp_codec_dev/device/es7210/es7210.c"
     INCLUDE_DIRS "."
+        "/Users/deliqiao/Documents/github/inksight/firmware/esp-idf/ESP32-S3-RLCD4.2/components/esp_codec_dev/include"
+        "/Users/deliqiao/Documents/github/inksight/firmware/esp-idf/ESP32-S3-RLCD4.2/components/esp_codec_dev/interface"
+        "/Users/deliqiao/Documents/github/inksight/firmware/esp-idf/ESP32-S3-RLCD4.2/components/esp_codec_dev/device/include"
+        "/Users/deliqiao/Documents/github/inksight/firmware/esp-idf/ESP32-S3-RLCD4.2/components/esp_codec_dev/device/priv_include"
     REQUIRES
         driver
         esp_adc
@@ -26,10 +38,6 @@ idf_component_register(
         json
         mbedtls
         nvs_flash
-        esp_codec_dev
-        esp_driver_i2c
-        esp_driver_i2s
         tcp_transport
 )
-
 target_compile_options(${COMPONENT_LIB} PRIVATE -Wall -Wextra)
