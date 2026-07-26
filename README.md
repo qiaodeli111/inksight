@@ -150,6 +150,53 @@ ESP32-S3-RLCD-4.2** 一体式反射屏的首版适配。该适配使用纯
 - API：[`docs/api.md`](docs/api.md)
 - 插件 / 扩展开发：[`docs/plugin-dev.md`](docs/plugin-dev.md)
 
+## 专注监听（告警推送）
+
+ESP-IDF 版本支持 **专注监听模式**，允许外部 AI Agent（如 pi、Claude 等）通过 API
+推送紧急告警到你的 RLCD 屏幕。
+
+### 启用方式
+
+1. 在 [Inksight 配置页](https://www.inksight.site/config) 找到你的设备
+2. 开启 **「专注监听」** 开关
+3. 复制弹窗中的 **alert_token**
+
+### 推送告警
+
+通过 pi 扩展一键推送：
+
+```
+/inksight set https://www.inksight.site AA:BB:CC:DD:EE:FF <alert_token>
+/inksight-alert 老板找你 --sender=紧急 --level=critical
+```
+
+告警会在设备屏幕上显示 30 秒后自动恢复。
+
+> ⚠️ 专注监听开启时设备不会进入深度睡眠，功耗会增加。
+> 不需要时可在配置页关闭。
+
+## 本地构建与刷机（开发者）
+
+ESP-IDF 版本代码位于 `firmware/esp-idf/ESP32-S3-RLCD4.2/`。
+
+```bash
+cd firmware/esp-idf/ESP32-S3-RLCD4.2
+
+# 一键构建
+./build.sh build
+
+# 刷机（替换为你的串口）
+ESP_PORT=/dev/cu.usbmodem101 ./build.sh flash
+
+# 刷机 + 看日志
+ESP_PORT=/dev/cu.usbmodem101 ./build.sh flash-monitor
+
+# 进入菜单配置
+./build.sh menuconfig
+```
+
+首次运行需要配网：连接 `InkSight-XXXXXX` Wi-Fi 后访问 `http://192.168.4.1`。
+
 ## 社区
 
 - Discord: [https://discord.gg/5Ne6D4YNf](https://discord.gg/5Ne6D4YNf)

@@ -519,3 +519,204 @@ esp_err_t backend_render(
     }
     return ESP_FAIL;
 }
+
+esp_err_t backend_fetch_focus_config(
+    inksight_config_t *config,
+    bool *focus_listening,
+    bool *always_active
+) {
+    if (config == NULL || focus_listening == NULL || always_active == NULL) {
+        return ESP_ERR_INVALID_ARG;
+    }
+    *focus_listening = false;
+    *always_active = false;
+
+    ESP_RETURN_ON_ERROR(
+        ensure_device_token(config),
+        TAG,
+        "Device token unavailable for focus config check"
+    );
+
+    char mac[18];
+    wifi_manager_mac_string(mac, sizeof(mac));
+    char url[512];
+    int result = snprintf(
+        url,
+        sizeof(url),
+        "%s/api/config/%s",
+        config->server,
+        mac
+    );
+    if (result < 0 || (size_t)result >= sizeof(url)) {
+        return ESP_ERR_INVALID_SIZE;
+    }
+
+    for (int attempt = 0; attempt < 2; attempt++) {
+        http_response_t response;
+        int status_code = 0;
+        esp_err_t err = perform_request(
+            url,
+            HTTP_METHOD_GET,
+            config->device_token,
+            NULL,
+            &response,
+            &status_code
+        );
+        if (err != ESP_OK) {
+            ESP_LOGW(TAG, "Config request failed: %s", esp_err_to_name(err));
+            response_release(&response);
+            return err;
+        }
+
+        if (status_code == 401 && attempt == 0) {
+            response_release(&response);
+            config->device_token[0] = '\0';
+            config_store_clear_device_token();
+            ESP_RETURN_ON_ERROR(
+                ensure_device_token(config),
+                TAG,
+                "Token refresh failed"
+            );
+            continue;
+        }
+        if (status_code != 200) {
+            ESP_LOGW(
+                TAG,
+                "Config endpoint returned HTTP %d",
+                status_code
+            );
+            response_release(&response);
+            return ESP_FAIL;
+        }
+
+        // Null-terminate for JSON parsing
+        if (response.body_length >= response.body_capacity) {
+            response_release(&response);
+            return ESP_ERR_NO_MEM;
+        }
+        response.body[response.body_length] = '\0';
+
+        cJSON *root = cJSON_ParseWithLength(
+            (const char *)response.body,
+            response.body_length
+        );
+        if (root == NULL) {
+            ESP_LOGW(TAG, "Config response is not valid JSON");
+            response_release(&response);
+            return ESP_ERR_INVALID_ARG;
+        }
+
+        const cJSON *focus_item = cJSON_GetObjectItemCaseSensitive(
+            root, "is_focus_listening"
+        );
+        if (cJSON_IsBool(focus_item)) {
+            *focus_listening = cJSON_IsTrue(focus_item);
+        }
+
+        const cJSON *active_item = cJSON_GetObjectItemCaseSensitive(
+            root, "is_always_active"
+        );
+        if (cJSON_IsBool(active_item)) {
+            *always_active = cJSON_IsTrue(active_item);
+        }
+
+        ESP_LOGI(
+            TAG,
+            "Focus config: focus_listening=%s always_active=%s",
+            *focus_listening ? "true" : "false",
+            *always_active ? "true" : "false"
+        );
+
+        cJSON_Delete(root);
+        response_release(&response);
+        return ESP_OK;
+    }
+    return ESP_FAIL;
+}
+
+esp_err_t backend_fetch_alert_bmp(
+    inksight_config_t *config,
+    uint8_t *frame
+) {
+    if (config == NULL || frame == NULL) {
+        return ESP_ERR_INVALID_ARG;
+    }
+
+    ESP_RETURN_ON_ERROR(
+        ensure_device_token(config),
+        TAG,
+        "Device token unavailable for alert check"
+    );
+
+    char mac[18];
+    wifi_manager_mac_string(mac, sizeof(mac));
+    char url[512];
+    int result = snprintf(
+        url,
+        sizeof(url),
+        "%s/api/device/%s/alert-bmp?w=%d&h=%d",
+        config->server,
+        mac,
+        INKSIGHT_WIDTH,
+        INKSIGHT_HEIGHT
+    );
+    if (result < 0 || (size_t)result >= sizeof(url)) {
+        return ESP_ERR_INVALID_SIZE;
+    }
+
+    for (int attempt = 0; attempt < 2; attempt++) {
+        http_response_t response;
+        int status_code = 0;
+        esp_err_t err = perform_request(
+            url,
+            HTTP_METHOD_GET,
+            config->device_token,
+            NULL,
+            &response,
+            &status_code
+        );
+        if (err != ESP_OK) {
+            ESP_LOGW(TAG, "Alert check failed: %s", esp_err_to_name(err));
+            response_release(&response);
+            return err;
+        }
+
+        if (status_code == 204) {
+            // No alert pending
+            response_release(&response);
+            return ESP_ERR_NOT_FOUND;
+        }
+
+        if (status_code == 401 && attempt == 0) {
+            response_release(&response);
+            config->device_token[0] = '\0';
+            config_store_clear_device_token();
+            ESP_RETURN_ON_ERROR(
+                ensure_device_token(config),
+                TAG,
+                "Token refresh failed"
+            );
+            continue;
+        }
+
+        if (status_code != 200) {
+            ESP_LOGW(
+                TAG,
+                "Alert-bmp endpoint returned HTTP %d (%u bytes)",
+                status_code,
+                (unsigned)response.body_length
+            );
+            response_release(&response);
+            return ESP_FAIL;
+        }
+
+        err = backend_decode_bmp(
+            response.body,
+            response.body_length,
+            frame
+        );
+        response_release(&response);
+        return err;
+    }
+    return ESP_FAIL;
+}

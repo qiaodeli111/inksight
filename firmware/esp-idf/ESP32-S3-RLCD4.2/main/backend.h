@@ -28,3 +28,27 @@ esp_err_t backend_decode_bmp(
     size_t length,
     uint8_t *frame
 );
+
+/**
+ * @brief Fetch focus_listening and always_active flags from server config.
+ *
+ * Calls GET /api/config/{mac}. On success sets *focus_listening and
+ * *always_active to the values from the server.
+ */
+esp_err_t backend_fetch_focus_config(
+    inksight_config_t *config,
+    bool *focus_listening,
+    bool *always_active
+);
+
+/**
+ * @brief Poll for a pending alert BMP.
+ *
+ * Calls GET /api/device/{mac}/alert-bmp. If an alert exists (HTTP 200),
+ * decodes the BMP into frame and returns ESP_OK. If no alert (HTTP 204),
+ * returns ESP_ERR_NOT_FOUND.
+ */
+esp_err_t backend_fetch_alert_bmp(
+    inksight_config_t *config,
+    uint8_t *frame
+);

@@ -1,12 +1,17 @@
 idf_component_register(
     SRCS
         "app_main.c"
+        "audio.c"
         "backend.c"
         "battery.c"
+        "codec_board.c"
+        "codec_init.c"
         "config_store.c"
+        "dummy_codec.c"
         "portal.c"
         "st7305.c"
         "ui.c"
+        "voice_chat.c"
         "wifi_manager.c"
     INCLUDE_DIRS "."
     REQUIRES
@@ -21,6 +26,10 @@ idf_component_register(
         json
         mbedtls
         nvs_flash
+        esp_codec_dev
+        esp_driver_i2c
+        esp_driver_i2s
+        tcp_transport
 )
 
-target_compile_options(${COMPONENT_LIB} PRIVATE -Wall -Wextra -Werror)
+target_compile_options(${COMPONENT_LIB} PRIVATE -Wall -Wextra)

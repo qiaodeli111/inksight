@@ -74,6 +74,31 @@
 #define PIN_LED        -1
 #define PIN_RGB_LED    48
 #define PIN_AI_CHAT_SW -1
+#elif defined(BOARD_PROFILE_WAVESHARE_S3_RLCD_42)
+// Waveshare ESP32-S3 RLCD 4.2" - ST7305 display
+#define PIN_EPD_MOSI   12
+#define PIN_EPD_SCK    11
+#define PIN_EPD_CS     40
+#define PIN_EPD_DC     5
+#define PIN_EPD_RST    41
+#define PIN_EPD_BUSY   -1   // ST7305 has no BUSY pin
+#define PIN_BAT_ADC    4
+#define PIN_CFG_BTN    18   // KEY button (right side)
+#define PIN_LED        -1
+#define PIN_RGB_LED    -1
+#define PIN_AI_CHAT_SW 0    // BOOT button for AI Chat toggle
+#define BOARD_HAS_AUDIO
+// Audio pins (ES8311 + ES7210 via I2C + I2S)
+#define AUDIO_I2S_MCLK 16
+#define AUDIO_I2S_BCLK 9
+#define AUDIO_I2S_WS   45
+#define AUDIO_I2S_DOUT 8
+#define AUDIO_I2S_DIN  10
+#define AUDIO_PA_PIN   46
+#define AUDIO_I2C_SDA  13
+#define AUDIO_I2C_SCL  14
+#define ES8311_ADDR    0x18
+#define ES7210_ADDR    0x40
 #else
 #error "Unsupported board profile"
 #endif
